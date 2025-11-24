@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>किसान सलाहकार | Farmer Advisor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+            background-color: #f5f5f5;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        /* 1. TOP NAVIGATION HEADER */
+        .top-header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            z-index: 100;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.dark-mode .top-header {
+            background-color: #2d2d2d;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-top-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: border-color 0.3s ease;
+        }
+
+        body.dark-mode .header-top-row {
+            border-bottom: 1px solid #444;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #333;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .hamburger-btn:hover {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        body.dark-mode .hamburger-btn {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .hamburger-btn:hover {
+            background-color: #3d3d3d;
+        }
+
+        .header-tabs {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .header-tab {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .header-tab:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        body.dark-mode .header-tab {
+            color: #aaa;
+        }
+
+        body.dark-mode .header-tab:hover {
+            background-color: #3d3d3d;
+            color: #e0e0e0;
+        }
+
+        .header-second-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 20px;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .app-title {
+            color: #4caf50;
+        }
+
+        .language-selector-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .language-selector-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        body.dark-mode .language-selector-btn {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .language-selector-btn:hover {
+            background-color: #4d4d4d;
+        }
+
+        /* Dark Mode Toggle Button */
+        .dark-mode-toggle {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 10px 14px;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #e0e0e0;
+            transform: rotate(180deg);
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode .dark-mode-toggle:hover {
+            background-color: #4d4d4d;
+        }
+
+        /* 2. CENTRAL CHAT AREA */
+        .chat-area {
+            flex: 1;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            padding: 20px;
+            padding-bottom: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease;
+            -webkit-overflow-scrolling: touch;
+            height: 0; /* Important for flex scrolling */
+            min-height: 0; /* Important for flex scrolling */
+        }
+
+        /* Custom Scrollbar */
+        .chat-area::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 10px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        body.dark-mode .chat-area {
+            background-color: #1a1a1a;
+        }
+
+        body.dark-mode .chat-area::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        body.dark-mode .chat-area::-webkit-scrollbar-thumb {
+            background: #555;
+            border-color: #2d2d2d;
+        }
+
+        body.dark-mode .chat-area::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* Firefox Scrollbar */
+        .chat-area {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #e0e0e0;
+        }
+
+        body.dark-mode .chat-area {
+            scrollbar-color: #555 #2d2d2d;
+        }
+
+        #chatbox {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            max-width: 70%;
+            animation: slideIn 0.3s ease-out;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .msg.user {
+            align-self: center;
+            flex-direction: row-reverse;
+            margin-right: 15%;
+        }
+
+        .msg.bot {
+            align-self: center;
+            margin-left: 15%;
+        }
+
+        .msg-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .msg.user .msg-avatar {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        .msg.bot .msg-avatar {
+            background-color: #0288d1;
+            color: white;
+        }
+
+        .msg-bubble {
+            background-color: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+        }
+
+        .msg-bubble p {
+            margin: 0 0 10px 0;
+        }
+
+        .msg-bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .msg-bubble ul, .msg-bubble ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .msg-bubble li {
+            margin: 5px 0;
+        }
+
+        .msg-bubble strong {
+            font-weight: 600;
+        }
+
+        .msg-bubble h1, .msg-bubble h2, .msg-bubble h3, 
+        .msg-bubble h4, .msg-bubble h5, .msg-bubble h6 {
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+        }
+
+        .msg-bubble h1:first-child, .msg-bubble h2:first-child, 
+        .msg-bubble h3:first-child, .msg-bubble h4:first-child {
+            margin-top: 0;
+        }
+
+        .msg.user .msg-bubble {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        .msg.bot .msg-bubble {
+            background-color: white;
+            color: #333;
+            text-align: left;
+        }
+
+        body.dark-mode .msg.bot .msg-bubble {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode .msg.bot .msg-bubble ul,
+        body.dark-mode .msg.bot .msg-bubble ol {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .msg.bot .msg-bubble strong {
+            color: #4caf50;
+        }
+
+        body.dark-mode .msg.user .msg-bubble {
+            background-color: #1b5e20;
+        }
+
+        .msg.error .msg-bubble {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        /* 3. FLOATING INPUT BAR (Bottom Section) */
+        .floating-input-container {
+            position: sticky;
+            bottom: 0;
+            background-color: #f5f5f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .floating-input-container {
+            background-color: #1a1a1a;
+        }
+
+        .pill-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            padding: 12px 20px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .pill-input-bar:focus-within {
+            border-color: #2e7d32;
+            box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+        }
+
+        body.dark-mode .pill-input-bar {
+            background-color: #2d2d2d;
+            border: 2px solid #444;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode .pill-input-bar:focus-within {
+            border-color: #4caf50;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .pill-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pill-btn:hover {
+            color: #2e7d32;
+            transform: scale(1.1);
+        }
+
+        .pill-btn:active {
+            transform: scale(0.95);
+        }
+
+        body.dark-mode .pill-btn {
+            color: #aaa;
+        }
+
+        body.dark-mode .pill-btn:hover {
+            color: #4caf50;
+        }
+
+        .send-btn {
+            background-color: #2e7d32 !important;
+            color: white !important;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .send-btn:hover {
+            background-color: #1b5e20 !important;
+            color: white !important;
+            transform: scale(1.1);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            background-color: #ccc !important;
+            color: #666 !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        body.dark-mode .send-btn {
+            background-color: #4caf50 !important;
+        }
+
+        body.dark-mode .send-btn:hover {
+            background-color: #66bb6a !important;
+        }
+
+        #question {
+            flex-grow: 1;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #333;
+            resize: none;
+            min-height: 24px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: inherit;
+            transition: color 0.3s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        #question::placeholder {
+            color: #999;
+        }
+
+        #question:focus {
+            outline: none;
+        }
+
+        body.dark-mode #question {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode #question::placeholder {
+            color: #666;
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            margin: 10px auto;
+            background-color: white;
+            border-radius: 18px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            max-width: 80%;
+            transition: all 0.3s ease;
+            align-self: center;
+        }
+
+        body.dark-mode .loading-indicator {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .voice-controls {
+            display: none;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            /* Larger spinner */
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .loading-indicator .spinner {
+            margin-right: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            /* Darker overlay */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            color: #333;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .modal-content h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        body.dark-mode .modal-content h2 {
+            color: #e0e0e0;
+        }
+
+        .modal-content p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        body.dark-mode .modal-content p {
+            color: #aaa;
+        }
+
+        #modalLanguageSelect {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode #modalLanguageSelect {
+            background-color: #1a1a1a;
+            border: 1px solid #555;
+            color: #e0e0e0;
+        }
+
+        #saveLanguageBtn {
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #saveLanguageBtn:hover {
+            background-color: #388E3C;
+        }
+
+        /* Tablet Responsive */
+        @media (max-width: 1024px) {
+            .msg {
+                max-width: 80%;
+            }
+
+            .msg.user {
+                margin-right: 10%;
+            }
+
+            .msg.bot {
+                margin-left: 10%;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            .header-top-row {
+                padding: 10px 15px;
+            }
+
+            .header-second-row {
+                padding: 15px;
+                flex-wrap: wrap;
+            }
+
+            .app-title {
+                font-size: 18px;
+                flex: 1;
+            }
+
+            .header-tabs {
+                gap: 8px;
+            }
+
+            .header-tab {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .hamburger-btn {
+                font-size: 24px;
+                padding: 5px 8px;
+            }
+
+            .dark-mode-toggle {
+                font-size: 20px;
+                width: 40px;
+                height: 40px;
+                padding: 8px 10px;
+            }
+
+            .language-selector-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            .chat-area {
+                padding: 15px 10px;
+                padding-bottom: 15px;
+            }
+
+            .chat-area::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .msg {
+                max-width: 90%;
+                margin-left: 5%;
+                margin-right: 5%;
+            }
+
+            .msg.user {
+                margin-right: 5%;
+            }
+
+            .msg.bot {
+                margin-left: 5%;
+            }
+
+            .msg-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 18px;
+            }
+
+            .msg-bubble {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .floating-input-container {
+                padding: 15px 10px;
+            }
+
+            .pill-input-bar {
+                max-width: 100%;
+                padding: 10px 15px;
+                gap: 8px;
+            }
+
+            .pill-btn {
+                font-size: 20px;
+                padding: 3px;
+            }
+
+            .send-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            #question {
+                font-size: 14px;
+            }
+        }
+
+        /* Small Mobile Responsive */
+        @media (max-width: 480px) {
+            .app-title {
+                font-size: 16px;
+            }
+
+            .header-tab {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+
+            .dark-mode-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .language-selector-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            .msg {
+                max-width: 95%;
+                margin-left: 2.5%;
+                margin-right: 2.5%;
+                gap: 8px;
+            }
+
+            .msg.user {
+                margin-right: 2.5%;
+            }
+
+            .msg.bot {
+                margin-left: 2.5%;
+            }
+
+            .msg-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+
+            .msg-bubble {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .pill-input-bar {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            .pill-btn {
+                font-size: 18px;
+            }
+
+            .send-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            #question {
+                font-size: 13px;
+            }
+        }
+
+        /* Large Screen Optimization */
+        @media (min-width: 1440px) {
+            .msg {
+                max-width: 60%;
+            }
+
+            .msg.user {
+                margin-right: 20%;
+            }
+
+            .msg.bot {
+                margin-left: 20%;
+            }
+
+            .pill-input-bar {
+                max-width: 900px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <div id="languageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeLanguageModal">&times;</span>
+            <h2>🌐 भाषा चुनें | Select Language</h2>
+            <p>कृपया अपनी पसंदीदा भाषा चुनें | Please select your preferred language:</p>
+            <select id="modalLanguageSelect">
+                <option value="english">English</option>
+                <option value="hindi">हिंदी</option>
+                <option value="marathi">मराठी</option>
+                <option value="tamil">தமிழ்</option>
+                <option value="telugu">తెలుగు</option>
+                <option value="kannada">ಕನ್ನಡ</option>
+                <option value="punjabi">ਪੰਜਾਬੀ</option>
+            </select>
+            <button id="saveLanguageBtn" class="btn-primary">जारी रखें | Continue</button>
+        </div>
+    </div>
+
+    <!-- 1. TOP NAVIGATION HEADER -->
+    <div class="top-header">
+        <div class="header-top-row">
+            <button class="hamburger-btn" id="hamburgerBtn" title="Menu">☰</button>
+            <div class="header-tabs">
+                <button class="header-tab" id="uploadsTab">UPLOADS</button>
+                <button class="header-tab" id="newChatTab">NEW CHAT</button>
+            </div>
+        </div>
+        <div class="header-second-row">
+            <h1 class="app-title">SUGARCANE ADVISOR</h1>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+                <button class="language-selector-btn" id="switchLanguageBtn" title="Language">EN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CENTRAL CHAT AREA -->
+    <div class="chat-area">
+        <div id="chatbox"></div>
+        <div id="loadingIndicator" class="loading-indicator" style="display:none;">
+            <span class="spinner"></span>
+            <span>Thinking...</span>
+        </div>
+    </div>
+
+    <!-- 3. FLOATING INPUT BAR -->
+    <div class="floating-input-container">
+        <div class="pill-input-bar">
+            <label for="chatFileInput" class="pill-btn" title="Upload Document">
+                <input type="file" id="chatFileInput" name="files" accept=".pdf,.txt,.doc,.docx" style="display:none;">
+                ➕
+            </label>
+            <textarea id="question" placeholder="Ask your question..." maxlength="5000" rows="1"></textarea>
+            <button type="button" id="voiceBtn" class="pill-btn" title="Voice Input">🎤</button>
+            <button type="button" id="sendBtn" class="pill-btn send-btn" title="Send Message">➤</button>
+        </div>
+    </div>
+
+    <!-- Hidden elements -->
+    <div class="voice-controls">
+        <button type="button" id="speakBtn" class="voice-btn btn-secondary">🔊 Listen to Answer</button>
+        <button type="button" id="stopSpeakBtn" class="voice-btn btn-danger" style="display:none;">⏹️ Stop</button>
+    </div>
+
+    <script>
+        // Utility: Add message to chat
+        function addMessage(message, sender) {
+            const chatbox = document.getElementById('chatbox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg ' + (sender || 'bot');
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'msg-avatar';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+            
+            if (sender === 'user') {
+                avatar.textContent = '👤';
+                bubble.innerHTML = escapeHtml(message);
+            } else if (sender === 'bot') {
+                avatar.textContent = '🤖';
+                bubble.innerHTML = marked.parse(message);
+            } else if (sender === 'error') {
+                avatar.textContent = '⚠️';
+                bubble.innerHTML = escapeHtml(message);
+            }
+            
+            msgDiv.appendChild(avatar);
+            msgDiv.appendChild(bubble);
+            chatbox.appendChild(msgDiv);
+            
+            // Smooth scroll to bottom
+            chatbox.parentElement.scrollTop = chatbox.parentElement.scrollHeight;
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Utility: Show loading
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = '';
+        }
+        // Utility: Hide loading
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+        // Utility: Get language
+        function getLanguage() {
+            return localStorage.getItem('appLanguage') || 'english';
+        }
+
+        // Variables
+        let recognition;
+        let synthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        let lastBotMessage = '';
+        let currentLanguage = localStorage.getItem('appLanguage') || 'english'; // Default to English
+
+        const languageCodes = {
+            'english': 'en-US',
+            'hindi': 'hi-IN',
+            'marathi': 'mr-IN',
+            'tamil': 'ta-IN',
+            'telugu': 'te-IN',
+            'kannada': 'kn-IN',
+            'punjabi': 'pa-IN'
+        };
+
+        const translations = {
+            'english': {
+                'appTitle': 'Farmer Agricultural Advisor',
+                'appTagline': 'Expert Advice for Sugarcane Farming',
+                'selectLanguage': 'Select Language:',
+                'uploadDocuments': 'Upload Documents',
+                'maxFileSize': 'Max 50MB per file | PDF, TXT, DOC, DOCX allowed',
+                'uploadFiles': 'Upload Files',
+                'cropDiseaseId': 'Crop Disease Identification',
+                'uploadCropPhoto': 'Upload crop photo | JPG, JPEG, PNG (max 10MB)',
+                'analyzeImage': 'Analyze Image',
+                'askQuestion': 'Ask your question...',
+                'voiceInput': 'Voice Input',
+                'send': 'Send',
+                'listenAnswer': 'Listen to Answer',
+                'stopSpeaking': 'Stop Speaking',
+                'thinking': 'Thinking...',
+                'you': 'You:',
+                'advisor': 'Advisor:',
+                'error': 'Error:',
+                'noFilesSelected': 'Please select at least one file',
+                'uploading': 'Uploading...',
+                'networkError': 'Network error:',
+                'noImageSelected': 'Please select a crop image',
+                'analyzing': 'Analyzing...',
+                'voiceNotSupported': 'Voice input not supported in this browser',
+                'voiceError': 'Voice recognition error:',
+                'noMessageToRead': 'No message to read',
+                'loadedFiles': 'Loaded Files',
+                'noFilesLoaded': 'No files loaded.',
+                'newChat': 'New Chat',
+                'searchChat': 'Search Chat',
+                'resetChat': 'Reset Chat',
+                'continue': 'Continue',
+                'library': 'Library',
+                'projects': 'Projects',
+                'explore': 'Explore',
+                'uploadDocument': 'Upload Document'
+            },
+            'hindi': {
+                'appTitle': 'किसान कृषि सलाहकार',
+                'appTagline': 'गन्ने की खेती के लिए विशेषज्ञ सलाह',
+                'selectLanguage': 'भाषा चुनें:',
+                'uploadDocuments': 'दस्तावेज़ अपलोड करें',
+                'maxFileSize': 'अधिकतम 50MB प्रति फ़ाइल | PDF, TXT, DOC, DOCX अनुमत',
+                'uploadFiles': 'अपलोड करें',
+                'cropDiseaseId': 'फसल रोग पहचान',
+                'uploadCropPhoto': 'फसल की फोटो अपलोड करें | JPG, JPEG, PNG (अधिकतम 10MB)',
+                'analyzeImage': 'फोटो जांचें',
+                'askQuestion': 'अपना सवाल पूछें...',
+                'voiceInput': 'वॉयस इनपुट',
+                'send': 'भेजें',
+                'listenAnswer': 'उत्तर सुनें',
+                'stopSpeaking': 'बंद करें',
+                'thinking': 'सोच रहा है...',
+                'you': 'आप:',
+                'advisor': 'सलाहकार:',
+                'error': 'त्रुटि:',
+                'noFilesSelected': 'कृपया कम से कम एक फ़ाइल चुनें',
+                'uploading': 'अपलोड हो रहा है...',
+                'networkError': 'नेटवर्क त्रुटि:',
+                'noImageSelected': 'कृपया फसल की फोटो चुनें',
+                'analyzing': 'जांच हो रही है...',
+                'voiceNotSupported': 'इस ब्राउज़र में वॉयस इनपुट समर्थित नहीं है',
+                'voiceError': 'वॉयस रिकॉग्निशन त्रुटि:',
+                'noMessageToRead': 'पढ़ने के लिए कोई संदेश नहीं',
+                'loadedFiles': 'लोड की गई फ़ाइलें',
+                'noFilesLoaded': 'कोई फ़ाइल लोड नहीं हुई।',
+                'newChat': 'नई चैट',
+                'searchChat': 'चैट खोजें',
+                'resetChat': 'चैट रीसेट करें',
+                'continue': 'जारी रखें',
+                'library': 'लाइब्रेरी',
+                'projects': 'परियोजनाएं',
+                'explore': 'एक्सप्लोर करें',
+                'uploadDocument': 'दस्तावेज़ अपलोड करें'
+            }
+            // ... add other languages here
+        };
+
+        // Utility: Clear chat
+        function clearChat() {
+            document.getElementById('chatbox').innerHTML = '';
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const body = document.body;
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            body.classList.toggle('dark-mode');
+            
+            // Update toggle icon
+            if (body.classList.contains('dark-mode')) {
+                darkModeToggle.textContent = '☀️';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                darkModeToggle.textContent = '🌙';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeechRecognition();
+
+            // Load dark mode preference
+            const darkModePreference = localStorage.getItem('darkMode');
+            if (darkModePreference === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+
+            // Show language modal if no language is set
+            if (!localStorage.getItem('appLanguage')) {
+                document.getElementById('languageModal').classList.add('show');
+            } else {
+                applyLanguage(currentLanguage);
+            }
+
+            // Auto-expand textarea
+            const textarea = document.getElementById('question');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            // Submit on Enter (without Shift)
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                }
+            });
+        });
+
+        // Send Button
+        document.getElementById('sendBtn').addEventListener('click', handleSendMessage);
+
+        // Dark Mode Toggle Button
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+        // Hamburger Menu
+        document.getElementById('hamburgerBtn').addEventListener('click', () => {
+            alert('Menu functionality - Add sidebar or navigation here');
+        });
+
+        // New Chat Tab
+        document.getElementById('newChatTab').addEventListener('click', () => {
+            clearChat();
+            addMessage('Hello! How can I help you with your sugarcane farming today?', 'bot');
+        });
+
+        // Uploads Tab
+        document.getElementById('uploadsTab').addEventListener('click', () => {
+            document.getElementById('chatFileInput').click();
+        });
+
+        // Header Upload Button (now part of left sidebar)
+        // document.getElementById('headerUploadBtn').addEventListener('click', () => {
+        //     document.getElementById('fileInput').click(); // Trigger the hidden file input
+        // });
+
+        // Chat File Input (next to typing box)
+        document.getElementById('chatFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const chatFileInputLabel = document.querySelector('label[for="chatFileInput"]');
+            chatFileInputLabel.disabled = true;
+            chatFileInputLabel.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                const formData = new FormData();
+                formData.append('files', file);
+
+                const res = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showAlert(data.error || 'Upload failed', 'error');
+                } else {
+                    showAlert(data.message, 'success');
+                    // Add file to sidebar list
+                    addLoadedFile(file.name);
+                    document.getElementById('chatFileInput').value = ''; // Clear input
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+                console.error('Upload error:', error);
+            } finally {
+                chatFileInputLabel.disabled = false;
+                chatFileInputLabel.innerHTML = '📄';
+            }
+        });
+
+        function addLoadedFile(filename) {
+            const loadedFilesList = document.getElementById('loadedFilesList');
+            // Remove "No files loaded." if present
+            const noFilesMsg = loadedFilesList.querySelector('p');
+            if (noFilesMsg) {
+                noFilesMsg.remove();
+            }
+            const fileItem = document.createElement('div');
+            fileItem.className = 'loaded-file-item';
+            fileItem.textContent = filename;
+            loadedFilesList.appendChild(fileItem);
+        }
+
+        // Language modal (now triggered by switchLanguageBtn)
+        // document.getElementById('languageSelect').addEventListener('change', () => {
+        //     const selectedLang = getLanguage();
+        //     const modalLangSelect = document.getElementById('modalLanguageSelect');
+
+        //     // Set the modal language selector to the current language
+        //     modalLangSelect.value = selectedLang;
+
+        //     // Show the language modal
+        //     document.getElementById('languageModal').style.display = 'block';
+        // });
+
+        // document.getElementById('closeLanguageModal').addEventListener('click', () => {
+        //     document.getElementById('languageModal').style.display = 'none';
+        // });
+
+        // document.getElementById('saveLanguageBtn').addEventListener('click', () => {
+        //     const modalLangSelect = document.getElementById('modalLanguageSelect');
+        //     const newLang = modalLangSelect.value;
+
+        //     // Update the main language selector
+        //     document.getElementById('languageSelect').value = newLang;
+
+        //     // Close the modal
+        //     document.getElementById('languageModal').style.display = 'none';
+
+        //     // Optionally, you can trigger a change event if needed
+        //     // document.getElementById('languageSelect').dispatchEvent(new Event('change'));
+        // });
+
+        // Switch Language button
+        document.getElementById('switchLanguageBtn').addEventListener('click', () => {
+            document.getElementById('modalLanguageSelect').value = currentLanguage;
+            document.getElementById('languageModal').classList.add('show');
+        });
+
+        document.getElementById('closeLanguageModal').addEventListener('click', () => {
+            document.getElementById('languageModal').classList.remove('show');
+        });
+
+        document.getElementById('saveLanguageBtn').addEventListener('click', () => {
+            const selectedLang = document.getElementById('modalLanguageSelect').value;
+            localStorage.setItem('appLanguage', selectedLang);
+            currentLanguage = selectedLang;
+            applyLanguage(currentLanguage);
+            document.getElementById('languageModal').classList.remove('show'); // Use classList for consistency
+        });
+
+        function applyLanguage(lang) {
+            const t = translations[lang] || translations['english'];
+
+            // Update header
+            document.querySelector('.app-title').textContent = 'SUGARCANE ADVISOR';
+            document.getElementById('switchLanguageBtn').textContent = lang === 'english' ? 'EN' : 
+                                                                      lang === 'hindi' ? 'हिं' :
+                                                                      lang === 'marathi' ? 'मरा' :
+                                                                      lang === 'tamil' ? 'த' :
+                                                                      lang === 'telugu' ? 'తె' :
+                                                                      lang === 'kannada' ? 'ಕ' :
+                                                                      lang === 'punjabi' ? 'ਪੰ' : 'EN';
+
+            // Update tabs
+            document.getElementById('uploadsTab').textContent = t.uploadDocuments || 'UPLOADS';
+            document.getElementById('newChatTab').textContent = t.newChat || 'NEW CHAT';
+
+            // Update input area
+            document.getElementById('question').placeholder = t.askQuestion;
+            document.querySelector('label[for="chatFileInput"]').title = t.uploadDocument || 'Upload';
+            document.getElementById('voiceBtn').title = t.voiceInput || 'Voice';
+
+            // Update loading indicator
+            document.querySelector('#loadingIndicator span:last-child').textContent = t.thinking;
+
+            // Update modal button
+            document.getElementById('saveLanguageBtn').textContent = t.continue;
+        }
+
+        // Chat handler - trigger from Enter key or send button
+        async function handleSendMessage() {
+            console.log('Send message triggered');
+            const questionInput = document.getElementById('question');
+            const sendBtn = document.getElementById('sendBtn');
+            const question = questionInput.value.trim();
+
+            if (!question) {
+                console.log('Question is empty');
+                return;
+            }
+
+            addMessage(question, 'user');
+            questionInput.value = '';
+            questionInput.style.height = 'auto';
+
+            // Disable send button while processing
+            sendBtn.disabled = true;
+            showLoading();
+
+            try {
+                const lang = getLanguage();
+                console.log('Sending question to /ask endpoint', { question, language: lang });
+                const res = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        language: lang
+                    })
+                });
+
+                const data = await res.json();
+                console.log('Response from /ask endpoint', data);
+
+                if (!res.ok) {
+                    addMessage(data.error || 'Failed to get response', 'error');
+                } else {
+                    addMessage(data.response, 'bot');
+                    lastBotMessage = data.response;
+                }
+            } catch (error) {
+                console.error('Error in /ask fetch:', error);
+                addMessage('Network error: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Voice Recognition Setup
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('question').value = transcript;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Voice recognition error:', event.error);
+                    addMessage('Voice error: ' + event.error, 'error');
+                };
+
+                // Voice Button
+                document.getElementById('voiceBtn').addEventListener('click', () => {
+                    const lang = languageCodes[getLanguage()] || 'en-US';
+                    recognition.lang = lang;
+                    recognition.start();
+                });
+            }
+        }
+
+        // Text-to-Speech
+        document.getElementById('speakBtn').addEventListener('click', () => {
+            if (!lastBotMessage) {
+                alert('No message to read');
+                return;
+            }
+
+            if (synthesis.speaking) {
+                synthesis.cancel();
+            }
+
+            const lang = languageCodes[getLanguage()] || 'en-US';
+            currentUtterance = new SpeechSynthesisUtterance(lastBotMessage);
+            currentUtterance.lang = lang;
+            synthesis.speak(currentUtterance);
+
+            document.getElementById('speakBtn').style.display = 'none';
+            document.getElementById('stopSpeakBtn').style.display = 'inline-block';
+        });
+
+        document.getElementById('stopSpeakBtn').addEventListener('click', () => {
+            if (synthesis.speaking) {
+                synthesis.cancel();
+            }
+            document.getElementById('speakBtn').style.display = 'inline-block';
+            document.getElementById('stopSpeakBtn').style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>

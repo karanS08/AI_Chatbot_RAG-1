@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ai-chatbot-sugarcane
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+    startCommand: python -m gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: False
+    healthCheckPath: /
+    autoDeploy: true
