@@ -6,12 +6,14 @@ services:
     plan: free
     branch: main
     buildCommand: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
-    startCommand: python -m gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    startCommand: python -m flask run --host=0.0.0.0 --port $PORT --no-reload
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: GOOGLE_API_KEY
         sync: false
+      - key: FLASK_APP
+        value: app
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG
