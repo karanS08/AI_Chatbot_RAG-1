@@ -5,7 +5,7 @@ from __future__ import annotations
 import os, time, json, re, glob, io, logging
 from typing import List, Dict, Any
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -101,9 +101,7 @@ def load_reference_images(category: str, max_images: int = 2) -> List[Dict[str, 
 # ----------------------------------------------------------------------------
 @app.route('/')
 def index():
-    # Render the template normally now that `templates/index.html` is the canonical UI.
-    # This allows Flask to serve static assets and ensures the full-width template is used.
-    return render_template('index.html')
+    return send_from_directory('templates', 'index.html')
 
 
 @app.route('/_template_info')

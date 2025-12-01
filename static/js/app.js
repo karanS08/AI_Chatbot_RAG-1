@@ -95,7 +95,6 @@ let recognition;
 let synthesis = window.speechSynthesis;
 let currentUtterance = null;
 let lastBotMessage = '';
-let currentLanguage = localStorage.getItem('appLanguage') || 'english'; // Default to English
 let attachedImageFile = null; // Store attached image
 // Feature flag: temporarily disable image/camera/file upload features
 const IMAGE_ENABLED = false; // set false to disable image functionality temporarily
@@ -135,9 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const dmt = document.getElementById('darkModeToggle');
         if (dmt) dmt.textContent = '☀️';
     }
-
-    // Show walkthrough on every page load
-    showWalkthrough();
 
     // Render pre-search suggestion chips
     renderPreSearchChips();
@@ -364,9 +360,15 @@ function showWalkthrough(force=false) {
     const chatbox = document.getElementById('chatbox');
     if (chatbox.children.length > 0 && !force) return;
 
+    // Only show the walkthrough on the very first visit
+    if (localStorage.getItem('hasVisited')) {
+        return;
+    }
+
     addMessage('👋 Welcome! Here\'s how to use Sugarcane Advisor:', 'bot');
-    addMessage('**Quick Start:**\n- Type your question below and press Send ➤\n- Tap � to attach & analyze crop images (with your question)\n- Tap � to upload documents for better context\n- Use 🌐 to switch language • 🌙 for dark mode • 🎤 for voice input', 'bot');
-    addMessage('💡 **Tip:** You can ask in Hindi, Marathi, Tamil, Telugu, Kannada, or English.', 'bot');
+    addMessage('**Quick Start:**\n- Type your question below and press Send ➤\n- Tap 📷 to attach & analyze crop images (with your question)\n- Tap 📎 to upload documents for better context\n- Use 🌙 for dark mode • 🎤 for voice input', 'bot');
+    
+    localStorage.setItem('hasVisited', 'true');
 }
 
 // Language UI removed from template; no inline dropdown handlers required here.
