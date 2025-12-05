@@ -2,7 +2,8 @@
 // The file expects `marked` to be loaded (CDN) before this script runs.
 
 // Utility: Add message to chat
-function addMessage(message, sender, imageData = null) {
+// Enhanced to support infographic display with text fallback option
+function addMessage(message, sender, imageData = null, options = {}) {
   const chatbox = document.getElementById("chatbox");
   if (!chatbox) return; // nothing to render into
   const msgDiv = document.createElement("div");
@@ -19,13 +20,31 @@ function addMessage(message, sender, imageData = null) {
     }
     bubble.innerHTML = `${content} <span class="msg-time">${formatTime()}</span>`;
   } else if (sender === "bot") {
-    bubble.innerHTML = `${marked.parse(
-      message
-    )} <span class="msg-time">${formatTime()}</span>`;
+    // Check if we have an infographic to display
+    if (options.infographicUrl) {
+      // Create infographic container
+      const infographicHtml = `
+        <div class="infographic-container">
+          <img src="${options.infographicUrl}" class="infographic-image" alt="Infographic" onclick="window.open('${options.infographicUrl}', '_blank')">
+          <div class="infographic-actions">
+            <button class="text-fallback-btn" onclick="requestTextVersion('${escapeHtml(options.originalQuestion || '')}', this)" title="Show text version instead">
+              📝 ${t('showTextVersion') || 'Show Text Version'}
+            </button>
+            <span class="infographic-lang">${options.infographicLanguage ? '🌐 ' + options.infographicLanguage : ''}</span>
+          </div>
+        </div>
+        <div class="text-response collapsed">
+          <button class="expand-text-btn" onclick="toggleTextResponse(this)">📄 ${t('expandText') || 'Show Full Text'}</button>
+          <div class="text-content">${marked.parse(message)}</div>
+        </div>
+      `;
+      bubble.innerHTML = `${infographicHtml} <span class="msg-time">${formatTime()}</span>`;
+    } else {
+      // Regular text response
+      bubble.innerHTML = `${marked.parse(message)} <span class="msg-time">${formatTime()}</span>`;
+    }
   } else if (sender === "error") {
-    bubble.innerHTML = `${escapeHtml(
-      message
-    )} <span class="msg-time">${formatTime()}</span>`;
+    bubble.innerHTML = `${escapeHtml(message)} <span class="msg-time">${formatTime()}</span>`;
   }
 
   msgDiv.appendChild(bubble);
@@ -40,6 +59,64 @@ function addMessage(message, sender, imageData = null) {
     }
   }
 }
+
+// Toggle text response visibility
+function toggleTextResponse(btn) {
+  const container = btn.parentElement;
+  container.classList.toggle('collapsed');
+  const textContent = container.querySelector('.text-content');
+  if (container.classList.contains('collapsed')) {
+    btn.textContent = '📄 ' + (t('expandText') || 'Show Full Text');
+  } else {
+    btn.textContent = '📄 ' + (t('collapseText') || 'Hide Text');
+  }
+}
+
+// Request text-only version of a response
+async function requestTextVersion(question, btn) {
+  if (!question) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ ' + (t('loading') || 'Loading...');
+
+  try {
+    const response = await fetch('/get-text-version', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: question,
+        language: getLanguage()
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.response) {
+      // Find the infographic container and replace with text
+      const container = btn.closest('.infographic-container');
+      if (container) {
+        const parentBubble = container.closest('.msg-bubble');
+        if (parentBubble) {
+          parentBubble.innerHTML = `${marked.parse(data.response)} <span class="msg-time">${formatTime()}</span>`;
+        }
+      }
+    } else {
+      btn.textContent = '❌ ' + (t('failed') || 'Failed');
+      setTimeout(() => {
+        btn.textContent = '📝 ' + (t('showTextVersion') || 'Show Text Version');
+        btn.disabled = false;
+      }, 2000);
+    }
+  } catch (error) {
+    console.error('Text version request failed:', error);
+    btn.textContent = '❌ ' + (t('failed') || 'Failed');
+    setTimeout(() => {
+      btn.textContent = '📝 ' + (t('showTextVersion') || 'Show Text Version');
+      btn.disabled = false;
+    }, 2000);
+  }
+}
+
 
 function formatTime(d = new Date()) {
   try {
@@ -138,6 +215,11 @@ const translations = {
     listen: "🔊 Listen",
     stop: "⏹️ Stop",
     remove: "Remove",
+    showTextVersion: "Show Text Version",
+    expandText: "Show Full Text",
+    collapseText: "Hide Text",
+    loading: "Loading...",
+    failed: "Failed",
   },
   hinglish: {
     listening: "Sun raha hai...",
@@ -1010,8 +1092,21 @@ async function handleSendMessage() {
       if (!res.ok) {
         addMessage(data.error || "Failed to get response", "error");
       } else {
-        addMessage(data.response, "bot");
+        // Check if response includes an infographic
+        const messageOptions = {};
+        if (data.infographic_url) {
+          messageOptions.infographicUrl = data.infographic_url;
+          messageOptions.originalQuestion = question;
+          messageOptions.infographicLanguage = data.infographic_language || lang;
+        }
+
+        addMessage(data.response, "bot", null, messageOptions);
         lastBotMessage = data.response;
+
+        // Log classification info for debugging
+        if (data.response_format) {
+          console.log(`Response format: ${data.response_format}, confidence: ${data.classification_confidence}`);
+        }
       }
     }
   } catch (error) {
@@ -1225,227 +1320,227 @@ safeAddEvent("stopSpeakBtn", "click", () => {
 // ====== WALKTHROUGH & WELCOME SCREEN FUNCTIONALITY ======
 
 const walkthroughSteps = [
-    {
-        target: '.composer-center textarea',
-        title: '💬 Ask Your Questions',
-        text: 'Type your farming questions here. Ask about diseases, pests, fertilizers, irrigation, or any sugarcane farming topic!',
-        position: 'top'
-    },
-    {
-        target: '.attach:first-child',
-        title: '📷 Attach Images',
-        text: 'Click here to attach images of diseased plants, pests, or your farm. Our AI can analyze images and provide specific advice.',
-        position: 'top'
-    },
-    {
-        target: '.attach:last-of-type',
-        title: '📎 Upload Documents',
-        text: 'Upload PDF or text documents about your farm, soil reports, or reference materials. The AI will use this information to give personalized advice.',
-        position: 'top'
-    },
-    {
-        target: '#languageSelect',
-        title: '🌍 Choose Your Language',
-        text: 'Select your preferred language. We support 14+ Indian languages including Hindi, Marathi, Tamil, Telugu, and more!',
-        position: 'bottom'
-    },
-    {
-        target: '#classifyPlantBtn',
-        title: '🌿 Identify Plants',
-        text: 'Use this feature to identify sugarcane varieties or analyze plant health. Just click and upload a photo!',
-        position: 'bottom'
-    }
+  {
+    target: '.composer-center textarea',
+    title: '💬 Ask Your Questions',
+    text: 'Type your farming questions here. Ask about diseases, pests, fertilizers, irrigation, or any sugarcane farming topic!',
+    position: 'top'
+  },
+  {
+    target: '.attach:first-child',
+    title: '📷 Attach Images',
+    text: 'Click here to attach images of diseased plants, pests, or your farm. Our AI can analyze images and provide specific advice.',
+    position: 'top'
+  },
+  {
+    target: '.attach:last-of-type',
+    title: '📎 Upload Documents',
+    text: 'Upload PDF or text documents about your farm, soil reports, or reference materials. The AI will use this information to give personalized advice.',
+    position: 'top'
+  },
+  {
+    target: '#languageSelect',
+    title: '🌍 Choose Your Language',
+    text: 'Select your preferred language. We support 14+ Indian languages including Hindi, Marathi, Tamil, Telugu, and more!',
+    position: 'bottom'
+  },
+  {
+    target: '#classifyPlantBtn',
+    title: '🌿 Identify Plants',
+    text: 'Use this feature to identify sugarcane varieties or analyze plant health. Just click and upload a photo!',
+    position: 'bottom'
+  }
 ];
 
 let currentStep = 0;
 let walkthroughActive = false;
 
 function startWalkthrough() {
-    const overlay = document.getElementById('walkthroughOverlay');
-    if (!overlay) return;
-    
-    walkthroughActive = true;
-    currentStep = 0;
-    overlay.style.display = 'block';
-    showWalkthroughStep(currentStep);
+  const overlay = document.getElementById('walkthroughOverlay');
+  if (!overlay) return;
+
+  walkthroughActive = true;
+  currentStep = 0;
+  overlay.style.display = 'block';
+  showWalkthroughStep(currentStep);
 }
 
 function showWalkthroughStep(stepIndex) {
-    if (stepIndex >= walkthroughSteps.length) {
-        endWalkthrough();
-        return;
-    }
-    
-    const step = walkthroughSteps[stepIndex];
-    const targetElement = document.querySelector(step.target);
-    
-    if (!targetElement) {
-        // Skip to next if element not found
-        currentStep++;
-        showWalkthroughStep(currentStep);
-        return;
-    }
-    
-    const spotlight = document.getElementById('walkthroughSpotlight');
-    const tooltip = document.getElementById('walkthroughTooltip');
-    
-    // Position spotlight
-    const rect = targetElement.getBoundingClientRect();
-    spotlight.style.left = (rect.left - 10) + 'px';
-    spotlight.style.top = (rect.top - 10) + 'px';
-    spotlight.style.width = (rect.width + 20) + 'px';
-    spotlight.style.height = (rect.height + 20) + 'px';
-    
-    // Update tooltip content
-    document.getElementById('tooltipTitle').textContent = step.title;
-    document.getElementById('tooltipText').textContent = step.text;
-    document.getElementById('walkthroughProgress').textContent = `${stepIndex + 1}/${walkthroughSteps.length}`;
-    
-    // Position tooltip
-    tooltip.className = 'walkthrough-tooltip';
-    const tooltipRect = tooltip.getBoundingClientRect();
-    
-    switch(step.position) {
-        case 'top':
-            tooltip.style.left = (rect.left + rect.width / 2 - tooltipRect.width / 2) + 'px';
-            tooltip.style.top = (rect.top - tooltipRect.height - 20) + 'px';
-            tooltip.classList.add('arrow-bottom');
-            break;
-        case 'bottom':
-            tooltip.style.left = (rect.left + rect.width / 2 - tooltipRect.width / 2) + 'px';
-            tooltip.style.top = (rect.bottom + 20) + 'px';
-            tooltip.classList.add('arrow-top');
-            break;
-        case 'left':
-            tooltip.style.left = (rect.left - tooltipRect.width - 20) + 'px';
-            tooltip.style.top = (rect.top + rect.height / 2 - tooltipRect.height / 2) + 'px';
-            tooltip.classList.add('arrow-right');
-            break;
-        case 'right':
-            tooltip.style.left = (rect.right + 20) + 'px';
-            tooltip.style.top = (rect.top + rect.height / 2 - tooltipRect.height / 2) + 'px';
-            tooltip.classList.add('arrow-left');
-            break;
-    }
-    
-    // Make sure tooltip stays in viewport
-    const finalRect = tooltip.getBoundingClientRect();
-    if (finalRect.left < 10) {
-        tooltip.style.left = '10px';
-    }
-    if (finalRect.right > window.innerWidth - 10) {
-        tooltip.style.left = (window.innerWidth - finalRect.width - 10) + 'px';
-    }
-    if (finalRect.top < 10) {
-        tooltip.style.top = '10px';
-    }
+  if (stepIndex >= walkthroughSteps.length) {
+    endWalkthrough();
+    return;
+  }
+
+  const step = walkthroughSteps[stepIndex];
+  const targetElement = document.querySelector(step.target);
+
+  if (!targetElement) {
+    // Skip to next if element not found
+    currentStep++;
+    showWalkthroughStep(currentStep);
+    return;
+  }
+
+  const spotlight = document.getElementById('walkthroughSpotlight');
+  const tooltip = document.getElementById('walkthroughTooltip');
+
+  // Position spotlight
+  const rect = targetElement.getBoundingClientRect();
+  spotlight.style.left = (rect.left - 10) + 'px';
+  spotlight.style.top = (rect.top - 10) + 'px';
+  spotlight.style.width = (rect.width + 20) + 'px';
+  spotlight.style.height = (rect.height + 20) + 'px';
+
+  // Update tooltip content
+  document.getElementById('tooltipTitle').textContent = step.title;
+  document.getElementById('tooltipText').textContent = step.text;
+  document.getElementById('walkthroughProgress').textContent = `${stepIndex + 1}/${walkthroughSteps.length}`;
+
+  // Position tooltip
+  tooltip.className = 'walkthrough-tooltip';
+  const tooltipRect = tooltip.getBoundingClientRect();
+
+  switch (step.position) {
+    case 'top':
+      tooltip.style.left = (rect.left + rect.width / 2 - tooltipRect.width / 2) + 'px';
+      tooltip.style.top = (rect.top - tooltipRect.height - 20) + 'px';
+      tooltip.classList.add('arrow-bottom');
+      break;
+    case 'bottom':
+      tooltip.style.left = (rect.left + rect.width / 2 - tooltipRect.width / 2) + 'px';
+      tooltip.style.top = (rect.bottom + 20) + 'px';
+      tooltip.classList.add('arrow-top');
+      break;
+    case 'left':
+      tooltip.style.left = (rect.left - tooltipRect.width - 20) + 'px';
+      tooltip.style.top = (rect.top + rect.height / 2 - tooltipRect.height / 2) + 'px';
+      tooltip.classList.add('arrow-right');
+      break;
+    case 'right':
+      tooltip.style.left = (rect.right + 20) + 'px';
+      tooltip.style.top = (rect.top + rect.height / 2 - tooltipRect.height / 2) + 'px';
+      tooltip.classList.add('arrow-left');
+      break;
+  }
+
+  // Make sure tooltip stays in viewport
+  const finalRect = tooltip.getBoundingClientRect();
+  if (finalRect.left < 10) {
+    tooltip.style.left = '10px';
+  }
+  if (finalRect.right > window.innerWidth - 10) {
+    tooltip.style.left = (window.innerWidth - finalRect.width - 10) + 'px';
+  }
+  if (finalRect.top < 10) {
+    tooltip.style.top = '10px';
+  }
 }
 
 function endWalkthrough() {
-    walkthroughActive = false;
-    const overlay = document.getElementById('walkthroughOverlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-    
-    // Store that user has seen walkthrough
-    try {
-        localStorage.setItem('walkthroughCompleted', 'true');
-    } catch (e) {
-        // Ignore localStorage errors
-    }
+  walkthroughActive = false;
+  const overlay = document.getElementById('walkthroughOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+
+  // Store that user has seen walkthrough
+  try {
+    localStorage.setItem('walkthroughCompleted', 'true');
+  } catch (e) {
+    // Ignore localStorage errors
+  }
 }
 
 function showWelcomeScreen() {
-    // Check if user has seen welcome screen before
-    try {
-        const seen = localStorage.getItem('walkthroughCompleted');
-        if (seen === 'true') {
-            return; // Don't show again
-        }
-    } catch (e) {
-        // Ignore localStorage errors
+  // Check if user has seen welcome screen before
+  try {
+    const seen = localStorage.getItem('walkthroughCompleted');
+    if (seen === 'true') {
+      return; // Don't show again
     }
-    
-    const welcomeScreen = document.getElementById('welcomeScreen');
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'flex';
-    }
+  } catch (e) {
+    // Ignore localStorage errors
+  }
+
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  if (welcomeScreen) {
+    welcomeScreen.style.display = 'flex';
+  }
 }
 
 // Event listeners for walkthrough
 safeAddEvent('nextWalkthrough', 'click', () => {
-    currentStep++;
-    showWalkthroughStep(currentStep);
+  currentStep++;
+  showWalkthroughStep(currentStep);
 });
 
 safeAddEvent('skipWalkthrough', 'click', () => {
-    endWalkthrough();
+  endWalkthrough();
 });
 
 safeAddEvent('startWalkthroughBtn', 'click', () => {
-    const welcomeScreen = document.getElementById('welcomeScreen');
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'none';
-    }
-    startWalkthrough();
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  if (welcomeScreen) {
+    welcomeScreen.style.display = 'none';
+  }
+  startWalkthrough();
 });
 
 safeAddEvent('skipWelcomeBtn', 'click', () => {
-    const welcomeScreen = document.getElementById('welcomeScreen');
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'none';
-    }
-    try {
-        localStorage.setItem('walkthroughCompleted', 'true');
-    } catch (e) {
-        // Ignore
-    }
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  if (welcomeScreen) {
+    welcomeScreen.style.display = 'none';
+  }
+  try {
+    localStorage.setItem('walkthroughCompleted', 'true');
+  } catch (e) {
+    // Ignore
+  }
 });
 
 safeAddEvent('restartTourBtn', 'click', () => {
-    startWalkthrough();
+  startWalkthrough();
 });
 
 // Handle suggestion card clicks
 document.addEventListener('click', (e) => {
-    const card = e.target.closest('.suggestion-card');
-    if (card) {
-        const question = card.getAttribute('data-question');
-        if (question) {
-            // Close welcome screen
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            if (welcomeScreen) {
-                welcomeScreen.style.display = 'none';
-            }
-            
-            // Set question in textarea
-            const textarea = document.getElementById('question');
-            if (textarea) {
-                textarea.value = question;
-                textarea.focus();
-            }
-            
-            // Optionally auto-send
-            setTimeout(() => {
-                const sendBtn = document.getElementById('sendBtn');
-                if (sendBtn) {
-                    sendBtn.click();
-                }
-            }, 300);
-            
-            try {
-                localStorage.setItem('walkthroughCompleted', 'true');
-            } catch (e) {
-                // Ignore
-            }
+  const card = e.target.closest('.suggestion-card');
+  if (card) {
+    const question = card.getAttribute('data-question');
+    if (question) {
+      // Close welcome screen
+      const welcomeScreen = document.getElementById('welcomeScreen');
+      if (welcomeScreen) {
+        welcomeScreen.style.display = 'none';
+      }
+
+      // Set question in textarea
+      const textarea = document.getElementById('question');
+      if (textarea) {
+        textarea.value = question;
+        textarea.focus();
+      }
+
+      // Optionally auto-send
+      setTimeout(() => {
+        const sendBtn = document.getElementById('sendBtn');
+        if (sendBtn) {
+          sendBtn.click();
         }
+      }, 300);
+
+      try {
+        localStorage.setItem('walkthroughCompleted', 'true');
+      } catch (e) {
+        // Ignore
+      }
     }
+  }
 });
 
 // Show welcome screen on page load
 window.addEventListener('load', () => {
-    setTimeout(() => {
-        showWelcomeScreen();
-    }, 500);
+  setTimeout(() => {
+    showWelcomeScreen();
+  }, 500);
 });

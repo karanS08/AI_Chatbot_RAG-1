@@ -38,6 +38,24 @@ The model will tailor the structured analysis to directly answer your specific q
 - Mobile-first responsive design
 - Bilingual labels (English + Hindi)
 
+### 🎨 Intelligent Response Format Selection (New)
+The system automatically determines the best response format based on query type:
+
+- **Visual Responses (Infographics)**: Automatically generated for:
+  - Step-by-step processes (e.g., "How to plant sugarcane?")
+  - Schedules and timelines (e.g., "Fertilizer schedule")
+  - Disease/pest symptoms identification
+  - Comparisons and procedures
+
+- **Text Responses**: Used for:
+  - Greetings and pleasantries
+  - Simple factual questions
+  - Clarifications and conversational queries
+
+- **Language-Aware Infographics**: Visual content is generated in the user's selected language (Hindi, Marathi, Tamil, etc.)
+
+- **Fallback Option**: Users can click "Show Text Version" to get text instead of an infographic
+
 ## 🚀 Live Demo
 
 **Deployed on Render.com:** [https://ai-chatbot-sugarcane.onrender.com](https://ai-chatbot-sugarcane.onrender.com)

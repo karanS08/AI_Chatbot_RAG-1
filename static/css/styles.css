@@ -1185,3 +1185,155 @@ body.dark-mode .loading-indicator {
         max-width: 900px;
     }
 }
+
+/* ============================================
+   INFOGRAPHIC DISPLAY STYLES
+   ============================================ */
+
+.infographic-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.infographic-image {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.infographic-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.infographic-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.text-fallback-btn {
+    background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.text-fallback-btn:hover {
+    background: linear-gradient(135deg, #e8e8e8, #d0d0d0);
+    border-color: #aaa;
+    transform: translateY(-1px);
+}
+
+.text-fallback-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+body.dark-mode .text-fallback-btn {
+    background: linear-gradient(135deg, #3d3d3d, #2d2d2d);
+    border-color: #555;
+    color: #e0e0e0;
+}
+
+body.dark-mode .text-fallback-btn:hover {
+    background: linear-gradient(135deg, #4d4d4d, #3d3d3d);
+    border-color: #666;
+}
+
+.infographic-lang {
+    font-size: 12px;
+    color: #666;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+}
+
+body.dark-mode .infographic-lang {
+    background: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+/* Collapsible text response */
+.text-response {
+    margin-top: 8px;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+.text-response.collapsed .text-content {
+    display: none;
+}
+
+.expand-text-btn {
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.expand-text-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+body.dark-mode .expand-text-btn {
+    color: #aaa;
+}
+
+body.dark-mode .expand-text-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+body.dark-mode .text-response {
+    border-top-color: #444;
+}
+
+.text-content {
+    margin-top: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+body.dark-mode .text-content {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive adjustments for infographics */
+@media (max-width: 768px) {
+    .infographic-image {
+        max-width: 100%;
+    }
+    
+    .infographic-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .text-fallback-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

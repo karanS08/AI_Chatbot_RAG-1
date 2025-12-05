@@ -43,6 +43,116 @@ CLIENT = None  # Will be set to genai.Client instance
 _STORE_INFO_PATH = '.file_search_store.json'
 _UPLOAD_CACHE_NAME = 'upload_cache.json'
 
+# Language names for infographic generation
+LANGUAGE_NAMES = {
+    'english': 'English',
+    'hindi': 'Hindi (हिंदी)',
+    'hinglish': 'Hindi-English mix (Hinglish)',
+    'marathi': 'Marathi (मराठी)',
+    'tamil': 'Tamil (தமிழ்)',
+    'telugu': 'Telugu (తెలుగు)',
+    'kannada': 'Kannada (ಕನ್ನಡ)',
+    'gujarati': 'Gujarati (ગુજરાતી)',
+    'punjabi': 'Punjabi (ਪੰਜਾਬੀ)',
+    'bengali': 'Bengali (বাংলা)',
+    'malayalam': 'Malayalam (മലയാളം)',
+    'odia': 'Odia (ଓଡ଼ିଆ)',
+    'assamese': 'Assamese (অসমীয়া)',
+    'urdu': 'Urdu (اردو)'
+}
+
+
+def classify_query_type(question: str) -> Dict[str, Any]:
+    """
+    Classify whether a query benefits from visual or text response.
+    
+    Uses a fast LLM to analyze the question and determine the best response format.
+    
+    Args:
+        question: The user's question
+    
+    Returns:
+        Dict with keys:
+        - format (str): 'visual' or 'text'
+        - confidence (float): 0.0 to 1.0
+        - reason (str): Brief explanation
+    """
+    if CLIENT is None:
+        logger.warning("⚠️ AI client not available for query classification")
+        return {'format': 'text', 'confidence': 0.5, 'reason': 'AI unavailable, defaulting to text'}
+    
+    # Quick keyword-based classification for obvious cases
+    question_lower = question.lower().strip()
+    
+    # Pleasantries and greetings - always text
+    pleasantry_patterns = [
+        'hello', 'hi', 'namaste', 'namaskar', 'good morning', 'good evening',
+        'thank you', 'thanks', 'dhanyawad', 'shukriya', 'bye', 'goodbye',
+        'how are you', 'what is your name', 'who are you', 'who made you'
+    ]
+    if any(pattern in question_lower for pattern in pleasantry_patterns):
+        logger.info("📝 Query classified as TEXT (pleasantry detected)")
+        return {'format': 'text', 'confidence': 0.95, 'reason': 'Greeting or pleasantry detected'}
+    
+    # Explicit visual requests - always visual
+    visual_explicit = [
+        'show me', 'diagram', 'chart', 'infographic', 'picture', 'image', 'visual',
+        'steps', 'step by step', 'how to', 'how do i', 'schedule', 'calendar',
+        'process', 'procedure', 'symptoms', 'identify', 'comparison', 'compare'
+    ]
+    if any(pattern in question_lower for pattern in visual_explicit):
+        logger.info("🎨 Query classified as VISUAL (explicit request)")
+        return {'format': 'visual', 'confidence': 0.95, 'reason': 'Visual content keywords detected'}
+    
+    # Use LLM for nuanced classification
+    prompt = """You are a query classifier for a farmer-focused agricultural chatbot.
+Classify whether this query would benefit MORE from a VISUAL response (infographic, diagram, chart) 
+or a TEXT response (plain explanation).
+
+VISUAL queries include:
+- How-to processes (planting steps, treatment procedures)
+- Schedules and timelines (fertilizer schedule, irrigation calendar)
+- Disease/pest symptoms and identification
+- Comparisons (varieties, methods, products)
+- Statistics and data
+
+TEXT queries include:
+- Greetings and pleasantries
+- Simple factual questions
+- Clarification requests
+- Opinion or advice seeking
+- Conversational questions
+
+Query: "{question}"
+
+Respond ONLY with JSON:
+{{"format": "visual" or "text", "confidence": 0.0-1.0, "reason": "brief explanation"}}"""
+
+    try:
+        resp = CLIENT.models.generate_content(
+            model='gemini-3-pro-preview',
+            contents=prompt.format(question=question)
+        )
+        
+        raw = resp.text or ''
+        parsed = _parse_json_from_text(raw)
+        
+        if parsed and 'format' in parsed:
+            result = {
+                'format': parsed.get('format', 'text').lower(),
+                'confidence': float(parsed.get('confidence', 0.5)),
+                'reason': parsed.get('reason', 'AI classification')
+            }
+            logger.info(f"🔍 Query classified as {result['format'].upper()} (confidence: {result['confidence']:.2f})")
+            return result
+            
+    except Exception as e:
+        logger.error(f'❌ Query classification failed: {e}')
+    
+    # Default to text when uncertain
+    logger.info("📝 Query classification defaulting to TEXT")
+    return {'format': 'text', 'confidence': 0.5, 'reason': 'Classification failed, defaulting to text'}
+
 
 # ============================================================================
 # RAG & FILE MANAGEMENT FUNCTIONS
@@ -339,7 +449,7 @@ def decide_make_infographic(content: str, original_question: str = '') -> Dict[s
     )
     
     try:
-        resp = CLIENT.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        resp = CLIENT.models.generate_content(model='gemini-3-pro-preview', contents=prompt)
         parsed = _parse_json_from_text(resp.text or '')
         
         if parsed:
@@ -414,7 +524,7 @@ def generate_svg_infographic(content: str, style: str = 'simple') -> Optional[st
     return None
 
 
-def generate_infographic_image(content: str, topic: str) -> Optional[str]:
+def generate_infographic_image(content: str, topic: str, language: str = 'english') -> Optional[str]:
     """
     Generate an infographic using Gemini 3 Pro Image with Google Search grounding.
     
@@ -424,6 +534,7 @@ def generate_infographic_image(content: str, topic: str) -> Optional[str]:
     Args:
         content: Content to visualize (context for the infographic)
         topic: Main topic for the infographic (used in prompt)
+        language: Language for text labels in the infographic (default: 'english')
     
     Returns:
         Relative file path to saved PNG ('generated_infographics/infographic_YYYYMMDD_HHMMSS.png')
@@ -433,16 +544,23 @@ def generate_infographic_image(content: str, topic: str) -> Optional[str]:
         logger.error("❌ AI client not available for image generation")
         return None
     
-    # Enhanced prompt leveraging Gemini 3 Pro Image capabilities
+    # Get the full language name for the prompt
+    lang_name = LANGUAGE_NAMES.get(language.lower(), 'English')
+    
+    # Enhanced prompt with language-specific instructions
     prompt = (
         f"Generate a professional agricultural infographic on: {topic}\n"
+        f"CRITICAL LANGUAGE REQUIREMENT: All text labels, headings, titles, and content in the infographic MUST be in {lang_name}.\n"
         f"Design requirements:\n"
         f"- Clean, modern flat design with agricultural theme\n"
         f"- Green and yellow color scheme (farmer-friendly)\n"
         f"- High clarity for mobile viewing\n"
-        f"- Include icons, text labels, and key statistics\n"
+        f"- Include icons, text labels in {lang_name}, and key statistics\n"
         f"- Aspect ratio: 16:9\n"
-        f"- Include practical tips relevant to sugarcane farmers in India"
+        f"- Include practical tips relevant to sugarcane farmers in India\n"
+        f"- Use simple, easy-to-understand vocabulary suitable for farmers\n"
+        f"- All numbers and measurements should use local conventions\n"
+        f"Context information:\n{content[:500] if content else 'General agricultural topic'}"
     )
     
     try:
@@ -452,6 +570,7 @@ def generate_infographic_image(content: str, topic: str) -> Optional[str]:
         
         logger.info(f"📸 Calling Gemini 3 Pro Image to generate infographic for: {topic}")
         logger.info(f"   ✓ Model: gemini-3-pro-image-preview")
+        logger.info(f"   ✓ Language: {lang_name}")
         logger.info(f"   ✓ Resolution: 4K")
         logger.info(f"   ✓ Aspect Ratio: 16:9")
         logger.info(f"   ✓ Tools: Google Search grounding")
@@ -482,9 +601,9 @@ def generate_infographic_image(content: str, topic: str) -> Optional[str]:
         image_data = image_parts[0].inline_data
         image_bytes = image_data.data
         
-        # Create unique filename with timestamp
+        # Create unique filename with timestamp and language
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"infographic_{timestamp}.png"
+        filename = f"infographic_{language}_{timestamp}.png"
         filepath = os.path.join(output_dir, filename)
         
         # Save image using Pillow
@@ -492,7 +611,7 @@ def generate_infographic_image(content: str, topic: str) -> Optional[str]:
             img.save(filepath, "PNG")
         
         logger.info(f"✅ Infographic saved to: {filepath}")
-        logger.info(f"🎨 Generated using Gemini 3 Pro Image (4K resolution)")
+        logger.info(f"🎨 Generated using Gemini 3 Pro Image (4K resolution, {lang_name})")
         
         # Return relative path for URL
         return f"generated_infographics/{filename}"

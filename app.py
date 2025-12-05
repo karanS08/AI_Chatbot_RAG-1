@@ -27,7 +27,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/tmp/app_debug.log'),
+        logging.FileHandler('app_debug.log'),
         logging.StreamHandler()
     ]
 )
@@ -152,12 +152,15 @@ def upload():
 @app.route('/ask', methods=['POST'])
 def ask():
     """
-    Intelligent RAG endpoint using Gemini 3 Pro.
-    The model decides whether to respond with text or generate an image.
-    Includes dual-LLM fallback: if text response suggests image generation, 
-    we automatically call Gemini 3 Pro Image (second LLM) to create the infographic.
+    Intelligent RAG endpoint using Gemini 3 Pro with automatic response format selection.
+    
+    The system automatically decides whether to respond with:
+    - TEXT: For pleasantries, simple questions, clarifications
+    - VISUAL: For how-to processes, schedules, symptoms, comparisons (generates infographic)
+    
+    Infographics are generated in the user's selected language.
+    Response always includes text; visual responses also include infographic_url.
     """
-    print("\n!!! /ASK ROUTE CALLED !!!\n", flush=True)
     if not request.json:
         return jsonify({'error': 'JSON body required'}), 400
     question = (request.json.get('question', '') or '').strip()
@@ -165,106 +168,127 @@ def ask():
     if not question:
         return jsonify({'error': 'Question cannot be empty'}), 400
 
-    print(f"!!! QUESTION: {question} !!!\n", flush=True)
-
     logger.info(f"\n{'='*80}")
     logger.info(f"📝 NEW QUESTION RECEIVED: '{question}'")
     logger.info(f"🌍 Language: {lang}")
     logger.info(f"{'='*80}")
 
     instruction = AGRICULTURAL_INSTRUCTIONS.get(lang, AGRICULTURAL_INSTRUCTIONS['english'])
+    
     try:
+        # ========== STEP 1: Classify query type ==========
+        logger.info("🔍 [STEP 1] Classifying query type...")
+        classification = ai_services.classify_query_type(question)
+        response_format = classification.get('format', 'text')
+        confidence = classification.get('confidence', 0.5)
+        
+        logger.info(f"   ✓ Format: {response_format.upper()}")
+        logger.info(f"   ✓ Confidence: {confidence:.2f}")
+        logger.info(f"   ✓ Reason: {classification.get('reason', 'N/A')}")
+        
+        # ========== STEP 2: Generate text response with RAG ==========
+        logger.info("🤖 [STEP 2] Generating text response with RAG...")
         store = ai_services.ensure_file_search_store()
         
-        # ========== FIRST LLM CALL: Gemini 3 Pro with RAG ==========
-        logger.info("🤖 [LLM 1] Making FIRST call to Gemini 3 Pro (with RAG)...")
-        logger.info("   ✓ Using gemini-3-pro-preview (reasoning model)")
-        logger.info("   ✓ Thinking level: HIGH (for complex agricultural decisions)")
-        logger.info("   ✓ Tools: File Search (RAG knowledge base)")
-        
         model_name = 'gemini-3-pro-preview'
-        print(f"\n\n!!! USING MODEL: {model_name} !!!\n\n", flush=True)
-        logger.info(f"!!! PYTHON IS ACTUALLY USING MODEL: {model_name} !!!")
-        
         resp = client.models.generate_content(
             model=model_name,
             contents=f'{instruction}\n\nUser Question: {question}',
             config=types.GenerateContentConfig(
-                # Tools: File Search (RAG knowledge base)
                 tools=[types.Tool(file_search=types.FileSearch(file_search_store_names=[store.name]))]
             )
         )
         
         if not resp.candidates:
-            logger.error("❌ No response generated from first LLM call")
+            logger.error("❌ No response generated from RAG call")
             return jsonify({'error': 'No response generated'}), 500
         
         raw_text = resp.text or 'No answer'
-        logger.info(f"✅ [LLM 1] Received response (length: {len(raw_text)} chars)")
+        logger.info(f"✅ [STEP 2] Text response generated (length: {len(raw_text)} chars)")
         
-        # ========== INTELLIGENT DECISION LOGIC ==========
-        # Check for image generation indicators
-        image_request_keywords = [
-            'generate image', 'create image', 'make an image', 'draw',
-            'create infographic', 'generate infographic', 'make infographic',
-            'show me', 'visual', 'diagram', 'chart'
-        ]
+        # ========== STEP 3: Generate infographic if visual format ==========
+        result = {
+            'response': raw_text,
+            'response_format': response_format,
+            'classification_confidence': confidence,
+            'classification_reason': classification.get('reason', '')
+        }
         
-        image_refusal_phrases = [
-            'cannot generate', 'cannot create', 'cannot make', 'unable to generate',
-            'unable to create', 'cannot draw', 'i cannot', 'i am unable',
-            'do not have', 'do not support', 'not capable'
-        ]
-        
-        is_image_request = any(kw in question.lower() for kw in image_request_keywords)
-        is_ai_refusing_images = any(phrase in raw_text.lower() for phrase in image_refusal_phrases)
-        
-        logger.info(f"📊 Decision Analysis:")
-        logger.info(f"   • User requested image: {is_image_request}")
-        logger.info(f"   • AI refusing to generate: {is_ai_refusing_images}")
-        
-        # ========== DUAL-LLM FALLBACK: If text mentions can't generate images ==========
-        if is_image_request and is_ai_refusing_images:
-            logger.info("\n⚠️  [DUAL-LLM TRIGGER] User asked for image but LLM 1 refused.")
-            logger.info("   → Activating LLM 2 (Gemini 3 Pro Image) for direct image generation...")
+        # Only generate infographic if classified as visual with good confidence
+        if response_format == 'visual' and confidence >= 0.6:
+            logger.info(f"🎨 [STEP 3] Generating infographic in {lang}...")
             
             try:
-                # Second LLM call: Use Gemini 3 Pro Image to generate infographic
-                image_path = ai_services.generate_infographic_image(content=raw_text, topic=question)
+                image_path = ai_services.generate_infographic_image(
+                    content=raw_text,
+                    topic=question,
+                    language=lang
+                )
                 
                 if image_path:
-                    logger.info(f"✅ [LLM 2] Image generated successfully: {image_path}")
-                    result = {
-                        'response': f"Certainly! Here is the infographic you requested for '{question}'.",
-                        'infographic_url': f'/uploads/{image_path}',
-                        'infographic_reason': 'Generated by Gemini 3 Pro Image (LLM 2 - Fallback)',
-                        'dual_llm_triggered': True
-                    }
-                    logger.info(f"✅ Returning response with infographic")
-                    return jsonify(result), 200
+                    result['infographic_url'] = f'/uploads/{image_path}'
+                    result['infographic_language'] = lang
+                    logger.info(f"✅ [STEP 3] Infographic generated: {image_path}")
                 else:
-                    logger.error("❌ [LLM 2] Image generation failed (returned None)")
-                    # Fall back to text response
-                    logger.info("   → Falling back to text response from LLM 1")
-                    result = {'response': raw_text}
-                    return jsonify(result), 200
+                    logger.warning("⚠️ [STEP 3] Infographic generation returned None")
+                    result['infographic_error'] = 'Generation failed, text response provided'
+                    
             except Exception as e:
-                logger.error(f"❌ [LLM 2] Exception during image generation: {type(e).__name__}: {e}")
-                import traceback
-                logger.error(traceback.format_exc())
-                # Fall back to text response
-                logger.info("   → Falling back to text response from LLM 1")
-                result = {'response': raw_text}
-                return jsonify(result), 200
+                logger.error(f"❌ [STEP 3] Infographic generation failed: {e}")
+                result['infographic_error'] = str(e)
+        else:
+            logger.info(f"📝 [STEP 3] Skipping infographic (format={response_format}, confidence={confidence:.2f})")
         
-        # ========== DEFAULT RESPONSE: Return AI text response ==========
-        logger.info("✅ Returning text response from LLM 1")
-        result = {'response': raw_text}
+        logger.info(f"✅ Returning response (format: {response_format})")
         return jsonify(result), 200
         
-    except Exception as e:  # pragma: no cover
+    except Exception as e:
         logger.error(f'/ask error: {e}')
+        import traceback
+        logger.error(traceback.format_exc())
         return jsonify({'error': 'Failed to process question'}), 500
+
+
+@app.route('/get-text-version', methods=['POST'])
+def get_text_version():
+    """
+    Return text-only version of a response (for users who prefer text over infographic).
+    
+    This endpoint re-asks the question but forces text-only response.
+    """
+    if not request.json:
+        return jsonify({'error': 'JSON body required'}), 400
+    question = (request.json.get('question', '') or '').strip()
+    lang = request.json.get('language', 'english').lower()
+    if not question:
+        return jsonify({'error': 'Question cannot be empty'}), 400
+
+    logger.info(f"📝 Text version requested for: '{question[:50]}...'")
+    
+    instruction = AGRICULTURAL_INSTRUCTIONS.get(lang, AGRICULTURAL_INSTRUCTIONS['english'])
+    
+    try:
+        store = ai_services.ensure_file_search_store()
+        resp = client.models.generate_content(
+            model='gemini-3-pro-preview',
+            contents=f'{instruction}\n\nUser Question: {question}',
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(file_search=types.FileSearch(file_search_store_names=[store.name]))]
+            )
+        )
+        
+        if not resp.candidates:
+            return jsonify({'error': 'No response generated'}), 500
+        
+        return jsonify({
+            'response': resp.text or 'No answer',
+            'response_format': 'text',
+            'is_fallback': True
+        }), 200
+        
+    except Exception as e:
+        logger.error(f'/get-text-version error: {e}')
+        return jsonify({'error': 'Failed to get text version'}), 500
 
 @app.route('/scan-image', methods=['POST'])
 def scan_image():
