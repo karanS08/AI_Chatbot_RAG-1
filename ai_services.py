@@ -398,12 +398,59 @@ def _parse_json_from_text(raw: str) -> Optional[Dict[str, Any]]:
     # Try fenced JSON first
     m = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     txt = m.group(1) if m else raw.strip()
-    
-    try:
-        return json.loads(txt)
-    except Exception:
-        logger.debug(f"Failed to parse JSON from: {raw[:100]}...")
+
+    # Helper: try multiple parsing strategies
+    def try_load(s: str) -> Optional[Dict[str, Any]]:
+        try:
+            return json.loads(s)
+        except Exception:
+            pass
+        # Try to fix common issues: single quotes -> double quotes
+        try:
+            s2 = s.replace("\n", " ")
+            s2 = re.sub(r"\bNone\b", 'null', s2)
+            s2 = re.sub(r"\bTrue\b", 'true', s2)
+            s2 = re.sub(r"\bFalse\b", 'false', s2)
+            # naive single->double quote replacement
+            if "'" in s2 and '"' not in s2:
+                s3 = s2.replace("'", '"')
+                try:
+                    return json.loads(s3)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        # Try ast.literal_eval as a last resort (can parse Python dicts)
+        try:
+            import ast
+            val = ast.literal_eval(s)
+            if isinstance(val, dict):
+                return val
+        except Exception:
+            pass
         return None
+
+    # First attempt
+    parsed = try_load(txt)
+    if parsed is not None:
+        return parsed
+
+    # If that failed, try to extract the largest {...} substring (balanced braces)
+    start = raw.find('{')
+    end = raw.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        candidate = raw[start:end+1]
+        parsed = try_load(candidate)
+        if parsed is not None:
+            return parsed
+
+    logger.debug(f"Failed to parse JSON from model output (preview): {raw[:200]}...")
+    return None
+
+
+def parse_json_from_text(raw: str) -> Optional[Dict[str, Any]]:
+    """Public wrapper that parses model text into JSON dict or returns None."""
+    return _parse_json_from_text(raw)
 
 
 def decide_make_infographic(content: str, original_question: str = '') -> Dict[str, Any]:

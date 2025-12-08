@@ -367,7 +367,11 @@ def scan_image():
     m = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw_text, re.DOTALL)
     candidate = m.group(1) if m else raw_text.strip()
     try:
-        data = json.loads(candidate)
+        parsed = ai_services.parse_json_from_text(candidate)
+        if parsed is not None:
+            data = parsed
+        else:
+            raise ValueError('Failed to parse JSON')
     except Exception:
         first_line = raw_text.split('\n')[0][:180]
         data = { "severity": "unknown",
@@ -466,7 +470,11 @@ def classify_plant():
     jm = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     jtxt = jm.group(1) if jm else raw
     try:
-        data = json.loads(jtxt)
+        parsed = ai_services.parse_json_from_text(jtxt)
+        if parsed is not None:
+            data = parsed
+        else:
+            raise ValueError('Failed to parse JSON')
     except Exception:
         data = {
             'classification': 'unknown',
