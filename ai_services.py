@@ -102,6 +102,16 @@ COOLDOWN_SECONDS = int(os.getenv('INFOGRAPHIC_COOLDOWN_SECONDS', '86400'))
 # File to persist last-generation timestamps (simple rate-limiter)
 _INFOGRAPHIC_COOLDOWN_FILE = os.path.join(UPLOAD_FOLDER, 'infographic_cooldown.json')
 
+# Configurable RAG/text model (can be overridden with env var RAG_MODEL)
+RAG_MODEL = os.getenv('RAG_MODEL', 'gemini-3-flash')
+
+def get_rag_model() -> str:
+    """Return the configured RAG/model name. Reads RAG_MODEL env var at call time.
+
+    This allows changing the model without editing code in deployments.
+    """
+    return os.getenv('RAG_MODEL', RAG_MODEL)
+
 
 
 def classify_query_type(question: str) -> Dict[str, Any]:
@@ -172,7 +182,7 @@ Respond ONLY with JSON:
 
     try:
         resp = CLIENT.models.generate_content(
-            model='gemini-2.5-flash-lite',
+            model=get_rag_model(),
             contents=prompt.format(question=question)
         )
         
@@ -581,7 +591,7 @@ def generate_svg_infographic(content: str, style: str = 'simple') -> Optional[st
     
     try:
         logger.info("🎨 Generating SVG infographic...")
-        resp = CLIENT.models.generate_content(model='gemini-2.5-flash-lite', contents=prompt)
+        resp = CLIENT.models.generate_content(model=get_rag_model(), contents=prompt)
         raw = resp.text or ''
         
         # Try to extract fenced SVG first

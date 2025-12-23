@@ -413,6 +413,18 @@ const translations = {
     generateInfographic: "Generate Infographic",
     infographicGenerated: "Infographic generated",
     infographicFailed: "Generation failed",
+    // Welcome & suggestions
+    welcomeTitle: "Welcome to Sugarcane Advisor",
+    welcomeSubtitle: "Your AI-powered farming assistant",
+    tryAsking: "Try asking about:",
+    suggestion1: "Best varieties for my region",
+    suggestion2: "Disease identification",
+    suggestion3: "Fertilizer schedule",
+    suggestion4: "Irrigation methods",
+    suggestion5: "Pest management",
+    suggestion6: "Government schemes",
+    takeTour: "Take a Quick Tour",
+    startChatting: "Start Chatting"
   },
   hinglish: {
     listening: "Sun raha hai...",
@@ -466,6 +478,18 @@ const translations = {
     darkMode: "डार्क मोड टॉगल करें",
     voice: "आवाज़",
     send: "भेजें",
+  // Welcome & suggestions (Hindi)
+  welcomeTitle: "गन्ना सलाहकार में आपका स्वागत है",
+  welcomeSubtitle: "आपका AI-संचालित खेती सहायक",
+  tryAsking: "पूछने के लिए आज़माएँ:",
+  suggestion1: "मेरे क्षेत्र के लिए सर्वश्रेष्ठ किस्में",
+  suggestion2: "रोग पहचान",
+  suggestion3: "उर्वरक अनुसूची",
+  suggestion4: "सिंचाई के तरीके",
+  suggestion5: "कीट प्रबंधन",
+  suggestion6: "सरकारी योजनाएँ",
+  takeTour: "त्वरित टूर लें",
+  startChatting: "चैट शुरू करें",
     listen: "🔊 सुनें",
     stop: "⏹️ रोकें",
     remove: "हटाएं",
@@ -611,6 +635,140 @@ function t(key) {
   return langTranslations[key] || translations["english"][key] || key;
 }
 
+// Native display names for languages (show each language in its own script)
+const nativeNames = {
+  english: 'English',
+  hinglish: 'Hinglish',
+  hindi: 'हिंदी',
+  marathi: 'मराठी',
+  tamil: 'தமிழ்',
+  telugu: 'తెలుగు',
+  kannada: 'ಕನ್ನಡ',
+  gujarati: 'ગુજરાતી',
+  punjabi: 'ਪੰਜਾਬੀ',
+  bengali: 'বাংলা',
+  malayalam: 'മലയാളം',
+  odia: 'ଓଡ଼ିଆ',
+  assamese: 'অসমীয়া',
+  urdu: 'اردو'
+};
+
+// Full suggestion question texts per language (used for data-question attributes)
+const suggestionQuestions = {
+  english: [
+    "What are the best sugarcane varieties for my region?",
+    "How do I identify and treat red rot disease?",
+    "What is the fertilizer schedule for sugarcane?",
+    "Tell me about irrigation methods for sugarcane",
+    "How to manage pests in sugarcane?",
+    "What government schemes are available for sugarcane farmers?"
+  ],
+  hinglish: [
+    "What are the best sugarcane varieties for my region?",
+    "How do I identify and treat red rot disease?",
+    "What is the fertilizer schedule for sugarcane?",
+    "Tell me about irrigation methods for sugarcane",
+    "How to manage pests in sugarcane?",
+    "What government schemes are available for sugarcane farmers?"
+  ],
+  hindi: [
+    "मेरे क्षेत्र के लिए सबसे अच्छी गन्ना किस्में कौन सी हैं?",
+    "मैं रेड रॉट बीमारी की पहचान और उपचार कैसे करूं?",
+    "गन्ने के लिए उर्वरक अनुसूची क्या है?",
+    "गन्ने के सिंचाई के तरीके क्या हैं?",
+    "गन्ने में कीटों का प्रबंधन कैसे करें?",
+    "गन्ना किसानों के लिए कौन-सी सरकारी योजनाएँ उपलब्ध हैं?"
+  ],
+  marathi: [
+    "माझ्या प्रदेशासाठी सर्वात चांगल्या गन्न्या किस्मा कोणत्या आहेत?",
+    "रेड रॉट रोग कसा ओळखावा व उपचार कसा करावा?",
+    "गन्न्यासाठी खतांचे वेळापत्रक काय आहे?",
+    "गन्न्यासाठी सिंचनाच्या पद्धती कोणत्या आहेत?",
+    "कीटक व्यवस्थापन कसे करावे?",
+    "गन्ना शेतकऱ्यांसाठी कोणत्या सरकारी योजना उपलब्ध आहेत?"
+  ],
+  tamil: [
+    "என் பிராந்தியத்திற்கு எந்த சர்க்கரைக் கன வகைகள் சிறந்தவை?",
+    "ரெட் ராட் நோயை எப்படி அடையாளம் காண்பது மற்றும் சிகிச்சை?",
+    "சர்க்கரைக்கான உரம் அட்டவணை என்ன?",
+    "சர்க்கரைக்கான நீர்ப்பாசன முறைகள் பற்றி சொல்லுங்கள்",
+    "சர்க்கரையில் பூச்சி மேலாண்மை எப்படி?",
+    "சர்க்கரை விவசாயிகளுக்கு எத்தனைய அரசு திட்டங்கள் உள்ளன?"
+  ],
+  telugu: [
+    "నా ప్రాంతానికి ఏ గన్నా వేరైటీలు ఉత్తమం?",
+    "రెడ్ రాట్ రోగాన్ని ఎలా గుర్తించి చికిత్స చేయాలి?",
+    "గన్నాకు ఎటువంటి ఎరువుల షెడ్యూల్ ఉంటుంది?",
+    "గన్నా కోసం నీరూపయోగ విధానాల గురించి చెప్పండి",
+    "గన్నాలో పురుగుల నిర్వహణ ఎలా చేయాలి?",
+    "గన్నా రైతులకు ఉన్న ప్రభుత్వ పథకాలు ఏమిటి?"
+  ],
+  kannada: [
+    "ನನ್ನ ಪ್ರದೇಶಕ್ಕೆ ಅತ್ಯುತ್ತಮ ಸುಗರ್‌ಕೇನ್ ಜಾತಿಗಳು ಯಾವುವು?",
+    "ರೆಡ್ ರಾಟ್ ರೋಗವನ್ನು ಹೇಗೆ ಗುರುತಿಸಿ ಚಿಕಿತ್ಸೆ ಮಾಡಬಹುದು?",
+    "ಸುಗರ್‌ಕೇನ್‌ಗೆ ಇರುವ ಎరವೆಗಳ ಸಮಯ ಪಟ್ಟಿ ಏನು?",
+    "ಸುಗರ್‌ಕೇನ್‌ಗಾಗಿ ಸಿಂಚನೆ ವಿಧಾನಗಳು ಯಾವುವು?",
+    "ಸುಗರ್‌ಕೇನ್‌ನಲ್ಲಿ ಕೀಟ ನಿರ್ವಹಣೆ ಹೇಗೆ?",
+    "ಸುಗರ್‌ಕೇನ್ ರೈತರಿಗೆ ಯಾವ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳಿವೆ?"
+  ],
+  gujarati: [
+    "મારા વિસ્તારમાં માટે શ્રેષ્ઠ ગન્ના જાતીઓ કઈ છે?",
+    "રેંડ રોટ રોગને કેવી રીતે ઓળખવું અને સારવાર કરવી?",
+    "ગન્ના માટે ખાતાનું શેડ્યુલ શું છે?",
+    "ગન્ના માટે સિંચાઈ પદ્ધતિઓ વિશે જાણો",
+    "ગન્ના માં જીવાતોનો પ્રબંધન કેવી રીતે કરવો?",
+    "ગન્ના ખેડૂતો માટે કયા સરકારી યોજના ઉપલબ્ધ છે?"
+  ],
+  punjabi: [
+    "ਮੇਰੇ ਖੇਤਰ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਗੰਨਾ ਕਿਸਮਾਂ ਕਿਹੜੀਆਂ ਹਨ?",
+    "ਰੈੱਡ ਰਾਟ ਰੋਗ ਨੂੰ ਕਿਵੇਂ ਪਛਾਣਾਂ ਅਤੇ ਇਲਾਜ ਕਰਾਂ?",
+    "ਗੰਨੇ ਲਈ ਖਾਦ ਦੀ ਸਮਾਂਸੂਚੀ ਕੀ ਹੈ?",
+    "ਗੰਨਾ ਲਈ ਸਿੰਚਾਈ ਦੇ ਤਰੀਕੇ ਬਾਰੇ ਦੱਸੋ",
+    "ਗੰਨੇ ਵਿੱਚ ਕੀਟਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਿਵੇਂ ਕਰਨਾ ਹੈ?",
+    "ਗੰਨੇ ਕਿਸਾਨਾਂ ਲਈ ਕਿਹੜੀਆਂ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਹਨ?"
+  ],
+  bengali: [
+    "আমার অঞ্চলের জন্য সেরা গ্যাষারকেন জাতগুলো কোনগুলো?",
+    "রেড রট রোগ কিভাবে শনাক্ত ও চিকিৎসা করব?",
+    "গ্যাষারকেনের জন্য সার ব্যবস্থাপনা কী?",
+    "গ্যাষারকেনের সেচ পদ্ধতিগুলো কী কী?",
+    "কীটপতঙ্গ পরিচালনা কিভাবে করব?",
+    "গ্যাষারকেন চাষিদের জন্য কোন সরকারি স্কিম আছে?"
+  ],
+  malayalam: [
+    "എന്റെ പ്രദേശത്തിന് മികച്ച ഗണ്ണാ വർഗങ്ങൾ ഏവയാണ്?",
+    "റെഡ് റോട്ട് രോഗം എങ്ങനെ തിരിച്ചറിയാം, ചികിത്സ എങ്ങനെ?",
+    "ഗണ്ണക്കായുള്ള വളങ്ങളുടെ ഷെഡ്യൂൾ എന്താണ്?",
+    "ഗണ്ണക്കായുള്ള വെള്ളപ്പകർച്ചാ രീതികൾ എന്തെല്ലാം?",
+    "കീടനിരോധന എങ്ങനെ ചെയ്യും?",
+    "ഗണ്ണാ തോട്ടക്കാർക്കായുള്ള സർക്കാർ സ്കീമുകൾ എന്തെല്ലാം?"
+  ],
+  odia: [
+    "ମୋ ଅଞ୍ଚଳ ପାଇଁ ସର୍ବୋତ୍ତମ ଗନ୍ନା ଜାତିଗୁଡ଼ିକ କେଉଁସି?",
+    "ରେଡ୍ ରଟ୍ ରୋଗକୁ କିପରି ଚିହ୍ନଟ ଏବଂ ଚିକିତ୍ସା କରିବେ?",
+    "ଗନ୍ନା ପାଇଁ ଉର୍ବରକ ତାଲିକା କ'ଣ?",
+    "ଗନ୍ନା ପାଇଁ ସିଞ୍ଚା ପ୍ରଣାଳୀଗୁଡ଼ିକ କେଉଁଗୁଡ଼ିକ?",
+    "ପୋକା ନିୟନ୍ତ୍ରଣ କିପରି କରିବେ?",
+    "ଗନ୍ନା ଚାଷୀଙ୍କ ପାଇଁ କେଉଁସି ସରକାରୀ ଯୋଜନା ଅଛି?"
+  ],
+  assamese: [
+    "মোৰ অঞ্চলৰ বাবে কোনবোৰ চুগাৰকেইন জাত সৰ্বশ্ৰেষ্ঠ?",
+    "ৰেড ৰট ৰোগ কেনেকৈ চিনিব আৰু চিকিত্সা কৰিব?",
+    "চুগাৰকেইনৰ বাবে সারৰ সময়সূচী কি?",
+    "চুগাৰকেইনৰ সেচ পদ্ধতি কোনবোৰ?",
+    "কেৱল কীট ব্যৱস্থাপনা কেনেকৈ কৰিব?",
+    "চুগাৰকেইন চাষীৰ বাবে চৰকাৰী যোজনাসমূহ কোনবোৰ?"
+  ],
+  urdu: [
+    "میرے علاقے کے لیے بہترین گنے کی اقسام کون سی ہیں؟",
+    "ریڈ رٹ بیماری کی شناخت اور علاج کیسے کریں؟",
+    "گنے کے لیے کھاد کا شیڈول کیا ہے؟",
+    "گنے کے لیے آبپاشی کے طریقے بتائیں",
+    "گنے میں کیڑوں کا انتظام کیسے کریں؟",
+    "گنے کے کسانوں کے لیے کون سی حکومتی اسکیمیں دستیاب ہیں؟"
+  ]
+};
+
 // Safe addEvent helper: attach listener only if element exists
 function safeAddEvent(idOrEl, event, handler) {
   const el =
@@ -663,6 +821,34 @@ function updateUILanguage() {
   if (titleEl) titleEl.textContent = t("appTitle");
   if (subtitleEl) subtitleEl.textContent = t("appSubtitle");
 
+  // Welcome screen texts and suggested questions
+  const welcomeH1 = document.querySelector('#chatWelcome .welcome-header h1');
+  const welcomeP = document.querySelector('#chatWelcome .welcome-header p');
+  const tryAskingH3 = document.querySelector('#chatWelcome .suggested-questions h3');
+  if (welcomeH1) welcomeH1.textContent = t('welcomeTitle');
+  if (welcomeP) welcomeP.textContent = t('welcomeSubtitle');
+  if (tryAskingH3) tryAskingH3.textContent = t('tryAsking');
+
+  // Update suggestion cards text
+  const suggestionTexts = [t('suggestion1'), t('suggestion2'), t('suggestion3'), t('suggestion4'), t('suggestion5'), t('suggestion6')];
+  const suggestionEls = document.querySelectorAll('.suggestion-card .suggestion-text');
+  suggestionEls.forEach((el, idx) => {
+    if (suggestionTexts[idx]) el.textContent = suggestionTexts[idx];
+  });
+  // Update suggestion-card data-question attributes with localized full questions
+  try {
+    const lang = getLanguage();
+    const sQuestions = suggestionQuestions[lang] || suggestionQuestions['english'];
+    const suggestionCards = document.querySelectorAll('.suggestion-card');
+    suggestionCards.forEach((card, idx) => {
+      if (sQuestions && sQuestions[idx]) {
+        card.setAttribute('data-question', sQuestions[idx]);
+      }
+    });
+  } catch (e) {
+    // ignore
+  }
+
   // Update Quick Actions section
   const sectionTitles = document.querySelectorAll(".section-title");
   if (sectionTitles[0]) sectionTitles[0].textContent = t("quickActions");
@@ -673,6 +859,23 @@ function updateUILanguage() {
   if (quickActionBtns[0]) quickActionBtns[0].textContent = t("uploadDoc");
   if (quickActionBtns[1]) quickActionBtns[1].textContent = t("attachImage");
   if (quickActionBtns[2]) quickActionBtns[2].textContent = t("newChat");
+  
+  // Update welcome action buttons
+  const startWalkBtn = document.getElementById('startWalkthroughBtn');
+  const skipWelcomeBtn = document.getElementById('skipWelcomeBtn');
+  if (startWalkBtn) startWalkBtn.innerHTML = `<span>🎯</span> ${t('takeTour')}`;
+  if (skipWelcomeBtn) skipWelcomeBtn.innerHTML = `<span>→</span> ${t('startChatting')}`;
+
+  // Update languageSelect option labels to native names
+  try {
+    const langOptions = document.querySelectorAll('#languageSelect option');
+    langOptions.forEach(opt => {
+      const code = opt.value;
+      if (nativeNames[code]) opt.textContent = nativeNames[code];
+    });
+  } catch (e) {
+    // ignore
+  }
 
   // Update no files loaded text
   const loadedFilesList = document.getElementById("loadedFilesList");
@@ -996,16 +1199,18 @@ function showWalkthrough(force = false) {
   // If chat already has content and not forced, do nothing
   const chatbox = document.getElementById("chatbox");
   if (chatbox.children.length > 0 && !force) return;
-
-  // Only show the walkthrough on the very first visit
-  if (localStorage.getItem("hasVisited")) {
+  // Only show the walkthrough on the very first visit unless forced
+  if (!force && localStorage.getItem("hasVisited")) {
     return;
   }
 
-  addMessage("👋 Welcome! Here's how to use Sugarcane Advisor:", "bot");
+  // Inject tour messages into chat (disable infographic action for these messages)
+  addMessage("👋 Welcome! Here's how to use Sugarcane Advisor:", "bot", null, { canGenerateInfographic: false });
   addMessage(
     "**Quick Start:**\n- Type your question below and press Send ➤\n- Tap 📷 to attach & analyze crop images (with your question)\n- Tap 📎 to upload documents for better context\n- Use 🌙 for dark mode • 🎤 for voice input",
-    "bot"
+    "bot",
+    null,
+    { canGenerateInfographic: false }
   );
 
   localStorage.setItem("hasVisited", "true");
@@ -1680,7 +1885,17 @@ safeAddEvent('startWalkthroughBtn', 'click', () => {
   if (welcomeScreen) {
     welcomeScreen.style.display = 'none';
   }
-  startWalkthrough();
+  // Use chat-based walkthrough (inject messages into chatbox) to avoid overlay UI wrapping
+  try {
+    // Force the chat-style walkthrough which posts messages into the chatbox
+    showWalkthrough(true);
+    // Ensure chat column is visible and scrolled
+    const chatCol = document.querySelector('.chat-column');
+    if (chatCol) chatCol.scrollTop = chatCol.scrollHeight;
+  } catch (e) {
+    // Fallback to overlay if chat-based walkthrough fails
+    startWalkthrough();
+  }
 });
 
 safeAddEvent('skipWelcomeBtn', 'click', () => {
@@ -1696,7 +1911,12 @@ safeAddEvent('skipWelcomeBtn', 'click', () => {
 });
 
 safeAddEvent('restartTourBtn', 'click', () => {
-  startWalkthrough();
+  // Restart chat-style walkthrough to avoid overlay
+  try {
+    showWalkthrough(true);
+  } catch (e) {
+    startWalkthrough();
+  }
 });
 
 // Handle suggestion card clicks

@@ -27,8 +27,8 @@ Routes:
     - /generate-infographic : Async infographic generation
     - /webhook : Alternative chat endpoint for webhooks
 
-Author: Shashank Tamaskar
-Version: 2.0
+Author: Shashank Tamaskar and Karan Sharma 
+Version: 3.0
 """
 from __future__ import annotations
 
@@ -227,7 +227,8 @@ def ask():
         logger.info("🤖 [STEP 2] Generating text response with RAG...")
         store = ai_services.ensure_file_search_store()
         
-        model_name = 'gemini-2.5-flash-lite'
+        # Use configured RAG model (env var RAG_MODEL) for text/RAG generation
+        model_name = ai_services.get_rag_model()
         resp = client.models.generate_content(
             model=model_name,
             contents=f'{instruction}\n\nUser Question: {question}',
@@ -342,7 +343,7 @@ def get_text_version():
     try:
         store = ai_services.ensure_file_search_store()
         resp = client.models.generate_content(
-            model='gemini-2.5-flash-lite',
+            model=ai_services.get_rag_model(),
             contents=f'{instruction}\n\nUser Question: {question}',
             config=types.GenerateContentConfig(
                 tools=[types.Tool(file_search=types.FileSearch(file_search_store_names=[store.name]))]
@@ -397,7 +398,7 @@ def scan_image():
     try:
         store = ai_services.ensure_file_search_store()
         resp = client.models.generate_content(
-            model='gemini-2.5-flash-lite',
+            model=ai_services.get_rag_model(),
             contents=[types.Content(parts=[
                 types.Part(text=prompt),
                 types.Part(inline_data=types.Blob(mime_type=image_file.content_type or 'image/jpeg', data=img_bytes))
@@ -446,7 +447,7 @@ def scan_image():
         retry_prompt = prompt + '\nRe-check subtle early-stage issues; add at least one recommendation if appropriate. Do NOT invent diseases.'
         try:
             retry = client.models.generate_content(
-                model='gemini-2.5-flash-lite',
+                model=ai_services.get_rag_model(),
                 contents=[types.Content(parts=[
                     types.Part(text=retry_prompt),
                     types.Part(inline_data=types.Blob(mime_type=image_file.content_type or 'image/jpeg', data=img_bytes))
@@ -508,7 +509,7 @@ def classify_plant():
     parts.append(types.Part(text='[QUERY IMAGE]'))
     parts.append(types.Part(inline_data=types.Blob(mime_type=image_file.content_type or 'image/jpeg', data=image_bytes)))
     resp = client.models.generate_content(
-        model='gemini-2.5-flash-lite',
+        model=ai_services.get_rag_model(),
         contents=[types.Content(parts=parts)],
         config=types.GenerateContentConfig(
             # Use default settings; reasoning-level option removed for compatibility
@@ -556,7 +557,7 @@ def webhook():
     try:
         store = ai_services.ensure_file_search_store()
         resp = client.models.generate_content(
-            model='gemini-2.5-flash-lite',
+            model=ai_services.get_rag_model(),
             contents=f'{instruction}\n\nUser Chat: {chat_text}',
             config=types.GenerateContentConfig(
                 tools=[types.Tool(file_search=types.FileSearch(file_search_store_names=[store.name]))]
